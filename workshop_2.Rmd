@@ -1,5 +1,5 @@
 ---
-title: "Observations I"
+title: "Observations II"
 author: "KGA320: Our Changing Climate"
 date: "Semester 2 2024"
 output: 
@@ -11,6 +11,7 @@ runtime: shiny_prerendered
 ```{r setup, include=FALSE}
 # Setup R environment
 library(tidyverse) # Includes ggplot2 and dplyr.
+library(learnr)
 
 barossa_data <- read.csv("data/barossa_1951-2014.csv")
 
@@ -62,7 +63,7 @@ It is well worth returning to workshop 1 if you need to refresh your memory. Thi
 
 The following code block will perform the set-up required for this workshop, using everything we learned from workshop 1:
 
-```{r}
+```{r start, exercise=TRUE}
 # Setup R environment
 library(tidyverse) # Includes ggplot2 and dplyr.
 
@@ -77,8 +78,15 @@ tas_data <- read.csv("data/southern_slopes_south_1951-2014.csv")
 
 Remember this final code block from last week's exercises? We tried creating a scatter plot of daily maximum temperatures over time, and the result isn't useful at all!
 
-```{r}
+```{r scatter_plot, exercise=TRUE}
 # Scatter plot of tasmax over time.
+
+ggplot(barossa_data, aes(x = time, y = tasmax)) +  # Specify the data and mapping of aesthetics
+  geom_point() +  # Add a line plot layer
+  ggtitle("trend of maximum temperature (1951-2014)") +  # add a title to the plot
+  xlab("Year") +  # Label the x-axis
+  ylab("maximum temperature (°c)")  # label the y-axis
+
 ```
 
 This week, we'll show you how to arrange data sets for better analysis of change in time.
@@ -91,14 +99,33 @@ Understanding periodic processes is foundational to climate science. For this co
 
 First, we can use the function `cut` to create a factor that groups data by decade with a new column. We can then use this new column as a factor when creating plots or conducting statistics. Let's create a new data frame, `barossa_data_decadal` using `cut`:
 
-```{r}    
+```{r cut, exercise=TRUE}    
 # Cut data by year.
+
+barossa_data <- separate(barossa_data, time, c('year', 'month', 'day'), sep = "-",remove = FALSE) # Splits date into columns for year, month, and day.
+barossa_data$year <- as.numeric(barossa_data$year) # Make sure R treats year as a number
+barossa_data$month <- as.numeric(barossa_data$month) # Make sure R treats year as a number
+barossa_data$day <- as.numeric(barossa_data$day) # Make sure R treats year as a number
+
+barossa_data$decade <- cut(barossa_data$year,
+                           breaks = seq(1950, 2020, by = 10),
+                           labels = c("1950s", "1960s", "1970s", "1980s", "1990s", "2000s", "2010s"))
+
+str(barossa_data)
 ```
 
 Another way to manipulate data frames is to use another great [tidyverse](https://www.tidyverse.org/) package - **dplyr**. dplyr is a package that provides functions for manipulating data frames by stringing together commands using **pipes**. Here's an example:
 
-```{r}      
+```{r pipes, exercise=TRUE, exercise.setup = "cut"}      
 # Create a data set that averages tasmax, tasmin, and pr for every year in barossa_data.
+
+barossa_yearly <- barossa_data %>%
+  group_by(year) %>%
+  summarise(
+    mean_tasmax = mean(tasmax),
+    mean_tasmin = mean(tasmin),
+    mean_pr = mean(pr)
+  )
 ```
 
 Here's a step-by-step breakdown: 
@@ -108,7 +135,7 @@ Here's a step-by-step breakdown:
   - `%>%` is a **pipe**. `barossa_data` will be pushed through into the next function for processing. 
 - `group_by(year) %>%` 
   - Group data by year and pipe it through to the next function. This will give us the columns to which the new columns will be matched. 
-- `summarize` 
+- `summarise` 
   - Creates new columns called `mean_tasmax`, `mean_tasmin`, and `mean_pr` that are calculated to be the means of each respective function for every year.
 
 Using `dplyr` gives endless ways to interpret your data. For example, you could look at seasonal cycles and how they have changed by averaging over months and grouping across decades. Or, you could count the number of days exceeding a certain temperature yearly. This is where you can start asking key questions for your report!
@@ -119,23 +146,32 @@ Using `dplyr` gives endless ways to interpret your data. For example, you could 
 
 Now that we can group data over time periods of our choosing, we can undertake comparative analysis. Let's first see what's happening visually. Below we will make a violin plot of each decade, using the data frame we constructed with `cut` in the previous section:
 
-```{r}
+```{r violin, exercise=TRUE, exercise.setup = "pipes"}
 # Create violin plots of decadal variation in maximum temperature.
+
+ggplot(barossa_data, aes(x = decade, y = tasmax)) + 
+  geom_violin() + 
+  ggtitle("Decadal variation of maximum temperature") +
+  xlab("Decade") + ylab("Maximum temperature (°C)") + 
+  theme_minimal()
 ```
 
 #### Statistical comparisons
 
 We can see some visual differences, but eyes are not enough. We need to conduct a statistical test to show that there is a meaningful difference between time periods. A simple measure can be found with a **t-test**. A t-test compares the difference between means for two groups. This test assumes that each group follows a **normal distribution** or a bell curve shape.
 
-```{r}
+```{r ttest, exercise=TRUE, exercise.setup = "violin"}
 # Conduct a t-test comparing decades.
+
+t.test(barossa_data$tasmax[barossa_data$decade == "1950s"],
+       barossa_data$tasmax[barossa_data$decade == "2000s"]) # Choosing the column tasmax for barossa data where the decade is as chosen.
 ```
 
 We can see that the test gives a few outputs. Let's go through the key ones:
 
--   `t` measures the difference between the means, accounting for standard error. In this case, we have `t = 2.5505`. Values above 2 for large datasets are generally considered significant.
--   `p-value` is the probability that the test has found a significant difference. We reject a **null hypothesis** that the means are equal if $p<0.05$. Here, we have `p-value = 0.02`, so we have strong evidence to suggest that the means of the two groups are different.
--   `95 percent confidence interval` provides an interval of the difference between the means of the two groups. In this case, the interval is given to be `-5.59 -0.57`, so we can be 95% sure that the 2010s are between 5 and 0.5 degrees warmer than the 1950s.
+-   `t` measures the difference between the means, accounting for standard error. In this case, we have `t = -1.9717`. Values above 2 or below -2 for large datasets are generally considered significant.
+-   `p-value` is the probability that the test has found a significant difference. We reject a **null hypothesis** that the means are equal if $p<0.05$. Here, we have `p-value = 0.04868`, so we have some evidence to suggest that the means of the two groups are different.
+-   `95 percent confidence interval` provides an interval of the difference between the means of the two groups. In this case, the interval is given to be `-0,80 -0.002`, so we can be 95% sure that the 2009s are up to 1 degree warmer than the 1950s.
 
 > 🤔 **Are the assumptions made for conducting a t-test valid for the data collected?**
 >
@@ -147,24 +183,45 @@ As we move further into statistical analysis, we must consider **correlation**. 
 
 In R, we can find a correlation using the `cor` function. `cor` takes two variables and finds a coefficient that takes on values between 1 and -1, with a coefficient of 0 indicating no correlation, a positive coefficient indicating both variables are increasing relative to each other, and a negative coefficient indicating the increase of one variable is associated with the decrease of the other. Let's find the correlations between the variables in `barossa_data`:
 
-```{r}
-# Correlation between variables
+```{r coref, exercise=TRUE, exercise.setup = "violin"}
+# Correlation between variables. Choose tasmax, tasmin from barossa_data. Setting use to complete.obs tells cor to ignore NA values.
+cor(barossa_data[, c("tasmax", "tasmin", "pr")], use = "complete.obs")
 ```
 
-We can see that `tasmax` and `tasmin` are strongly correlated. This makes sense; they are both measures of temperature for a day. `tasmax` and `pr` show a small correlation, suggesting that days with higher heat are more likely to come with rain in the Barossa Valley.
+We can see that `tasmax` and `tasmin` are strongly correlated. This makes sense; they are both measures of temperature for a day. `tasmax` and `pr` possibly show a small correlation, suggesting that days with higher heat are more likely to come with rain in the Barossa Valley.
 
-We can show this correlation with simple scatter graphs of the compared variables:
+We can show this correlation with simple scatter graphs of the compared variables. Try using `barossa_yearly` instead of the full dataset and see if there is any change in effect:
 
-```{r}
+```{r plot_cor, exercise=TRUE, exercise.setup = "coref"}
 # Scatter plot of pr ~ tasmax
+ggplot(barossa_data, aes(x = tasmax, y = pr)) + 
+  geom_point() + 
+  geom_smooth(method = "lm") +
+  ggtitle("Relationship Between Maximum Temperature and Precipitation") +
+  xlab("Maximum Temperature (°C)") + ylab("Precipitation (mm)") + 
+  theme_minimal()
+```
+
+```{r plot_cor-hint}
+# Change the plot to use yearly means.
+ggplot(barossa_yearly, aes(x = mean_tasmax, y = mean_pr)) + 
+  geom_point() + 
+  geom_smooth(method = "lm")
 ```
 
 Correlation will be an important measure to consider as we analyse the complete change of variables over time by building a **linear model**. Variables that are strongly correlated can reduce the effectiveness of linear models. There's nothing to worry about yet, but keep it in mind! \### Advanced visualisations
 
 We won't fully construct and analyse linear models this week but can visualise them. `ggplot` provides a means to simply visualise a linear relationship with `geom_smooth`. Last week, this would not have been useful; the complete dataset was far too messy. Now that we have `barossa_yearly`, we can finally make useful time series figures. Let's construct one for `tasmax` over the observation period:
 
-```{r}
-# Scatter plot with regression line?
+```{r regress, exercise=TRUE, exercise.setup = "plot_cor"}
+# Scatter plot  of yearly mean max temp with regression line.
+ggplot(barossa_yearly, aes(x = year, y = mean_tasmax)) + 
+  geom_point() + 
+  geom_smooth(method = "lm") +
+  ggtitle("Maximmum Temperature over 1951-2014") +
+  xlab("Year") + ylab("Maximum Temperature (°C)") + 
+  theme_minimal()
+
 ```
 
 We can see a clear change over time; when we construct complete linear models, we will back up the visuals with a p-value, but this is a good start!
@@ -184,27 +241,84 @@ You should now feel ready to go deeper with your climate data! Here's a summary 
 
 Almost time to code! First, another quick quiz. Good luck!
 
-```{r}
-# What is the correct order of operations to summarise barossa_data by averages for each decade?
+```{r q_order, echo=FALSE}
+question("What is the correct order of operations to summarise barossa_data by averages for each decade? Use the code block below.",
+         answer("A"),
+         answer("B", correct = TRUE),
+         answer("C")
+)
 ```
 
-```{r}
-# Which of the following code blocks could be used to create a data frame with the mean for each month in barossa_data?
+```{r, eval=FALSE}
+# A
+barossa_data %>%
+  summarise(mean_tasmax = mean(tasmax)) %>%
+  group_by(decade) 
+
+# B
+barossa_data %>%
+  group_by(decade) %>%
+  summarise(mean_tasmax = mean(tasmax))
+
+# C
+barossa_data %>%
+  group_by(decade) %>%
+  summarise(mean_tasmax = median(tasmax))
 ```
 
-```{r}
-# A t-test comparing variables A and B has estimated a 95% confidence interval for the difference in mean to be [-0.53, 1.34], with a p-value of 0.3. What is a suitable conclusion?
+```{r q_meanpr, echo=FALSE}
+question("Which of the below code blocks could be used to create a data frame with mean precipitaion for each month in barossa_data?",
+         answer("A", correct = TRUE),
+         answer("B"),
+         answer("C")
+)
 ```
 
-```{r}
-# Variables i and j have a correlation coefficient of 0.9. If you plotted i and j on a scatter plot, how would you expect the points to generally trend?
+```{r, eval=FALSE}
+#A
+barossa_data %>%
+  group_by(year, month) %>%
+  summarise(mean_pr = mean(pr))
+
+#B
+barossa_data %>%
+  group_by(month) %>%
+  summarise(mean_pr = mean(pr))
+
+#C
+barossa_data %>%
+  group_by(year, month) %>%
+  filter(day = 1)
 ```
 
-```{r}
-# Which dplyr function would correctly filter barossa_data for all values of tasmax above a threshold of 30?
+
+```{r q_ttest, echo=FALSE}
+question("A t-test comparing variables A and B has estimated a 95% confidence interval for the difference in mean to be [-0.53, 1.34], with a p-value of 0.3. What is a suitable conclusion?",
+         answer("We can reject the null hypothesis that there is no difference in the mean."),
+         answer("There is no statistically significant difference between measurements in A and B.", correct = TRUE),
+         answer("A and B are not in any way related.")
+)
 ```
 
-There are lots of questions here with dplyr and pipes. If you get them correct, give yourself a pat on the back! Try using the correct code provided in these examples as part of the exercises below. \### Exercises
+```{r q_cor, echo=FALSE}
+question("Variables i and j have a correlation coefficient of 0.9. If you plotted i and j on a scatter plot, how would you expect the points to generally trend?",
+         answer("Positive, from left to right moving upwards.", correct = TRUE),
+         answer("Flat."),
+         answer("Negative, from left to right moving downwards.")
+)
+```
+
+```{r q_filter, echo=FALSE}
+question("Which dplyr function would correctly filter barossa_data for all values of tasmax above a threshold of 30?",
+         answer("sort(tasmax) > 30"),
+         answer("barossa_data[tasmax > 30]"),
+         answer("filter(tasmax > 30)", correct = TRUE)
+)
+```
+
+There are lots of questions here with dplyr and pipes. If you get them correct, give yourself a pat on the back! Try using the correct code provided in these examples as part of the exercises below. 
+
+### Exercises
 
 > 🔥 **Important:** You cannot save your work on this webpage. If you create something you want to keep, save it to your computer!
 
@@ -212,10 +326,14 @@ There are lots of questions here with dplyr and pipes. If you get them correct, 
 
 #### Correlation between variables
 
-It's your turn! First, let's compare the variables in your region using `cor`:
+It's your turn! First, let's compare the variables in your region using `cor`. Make plots of any variables that could show a:
 
-```{r}
+```{r ex_cor, exercise = TRUE}
 # Find the correlation coefficients for your region's climate variables.
+```
+
+```{r ex_cor-hint}
+cor(...)
 ```
 
 These results will come into play for future analysis. Would you choose one variable over another to look into a certain question? Does correlation have an impact on any models you might want to construct?
@@ -226,16 +344,47 @@ These results will come into play for future analysis. Would you choose one vari
 
 Now, we can try factoring your data into decades using `cut`. Check that this has worked, and then create violin plots for each decade. If particular decades look worth comparing, conduct a t-test to measure the difference. Remember to make notes!
 
-```{r}
+```{r ex_cut, exercise=TRUE}
+# Replace barossa_data with your data frame to use year, month, and day as seperate numerical columns.
+barossa_data <- separate(barossa_data, time, c('year', 'month', 'day'), sep = "-",remove = FALSE) # Splits date into columns for year, month, and day.
+barossa_data$year <- as.numeric(barossa_data$year) # Make sure R treats year as a number
+barossa_data$month <- as.numeric(barossa_data$month) # Make sure R treats year as a number
+barossa_data$day <- as.numeric(barossa_data$day) # Make sure R treats year as a number
+
 # Use cut to compare climate data across decades.
+
+
+# Create violin plots for each decade.
+
+
+# Conduct t-tests to compare results.
+```
+
+```{r ex_cut-hint-1, eval = FALSE}
+...$decade <- cut(...$year,
+                           breaks = seq(1950, 2020, by = 10),
+                           labels = c("1950s", "1960s", "1970s", "1980s", "1990s", "2000s", "2010s"))
+```
+
+```{r ex_cut-hint-2, eval = FALSE}
+ggplot(..., aes(x = decade, y = tasmax)) + 
+  geom_violin() + 
+```
+
+```{r ex_cut-hint-3, eval = FALSE}
+t.test(...$tasmax[...$decade == "1950s"],
+       ...$tasmax[...$decade == "2000s"])
 ```
 
 Next, it's time to get into dplyr! Many examples of good dplyr code for working with climate data have been provided above. If you're lost, copy these examples over your region. This would be a good time to consider using the anomalies calculated last week. Once you are satisfied with your new data frame, plot it, and if it makes sense, include a linear fit.
 
 > 🔥 **Important:** Copy the code you use to simplify your data so you can reuse it for future workshops. It will also be important to record how you conducted your analysis!
 
-```{r}
+```{r ex_dplyr, exercise=TRUE, exercise.lines = 20}
 # Use dplyr functions to simplify your climate data.
+
+# Create time series or other relevant plots from the new data frame.
+
 ```
 
 ### Conclusion
