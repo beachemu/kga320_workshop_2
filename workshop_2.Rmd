@@ -1,0 +1,243 @@
+---
+title: "Observations I"
+author: "KGA320: Our Changing Climate"
+date: "Semester 2 2024"
+output: 
+  learnr::tutorial:
+    theme: lumen
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE}
+# Setup R environment
+library(tidyverse) # Includes ggplot2 and dplyr.
+
+barossa_data <- read.csv("data/barossa_1951-2014.csv")
+
+# Observational data
+north_data <- read.csv("data/monsoonal_north_burdekin_1951-2014.csv")
+eastcoast_data <- read.csv("data/east_coast_north_coast_1951-2014.csv")
+murray_data <- read.csv("data/murray_basin_riverina_1951-2014.csv")
+tas_data <- read.csv("data/southern_slopes_south_1951-2014.csv")
+
+# Drought data
+north_paleo <- read.csv("data/monsoonal_north_burdekin_drought_1400-2012.csv")
+eastcoast_paleo <- read.csv("data/east_coast_north_coast_drought_1400-2012.csv")
+murray_paleo <- read.csv("data/murray_basin_riverina_drought_1400-2012.csv")
+tas_paleo <- read.csv("data/southern_slopes_south_drought_1400-2012.csv")
+
+# Future data
+north_ssp126_2030 <- read.csv("data/monsoonal_north_burdekin_ssp126_2030-2049.csv")
+north_ssp126_2060 <- read.csv("data/monsoonal_north_burdekin_ssp126_2060-2079.csv")
+north_ssp370_2030 <- read.csv("data/monsoonal_north_burdekin_ssp370_2030-2049.csv")
+north_ssp370_2060 <- read.csv("data/monsoonal_north_burdekin_ssp370_2060-2079.csv")
+eastcoast_ssp126_2030 <- read.csv("data/east_coast_north_coast_ssp126_2030-2049.csv")
+eastcoast_ssp126_2060 <- read.csv("data/east_coast_north_coast_ssp126_2060-2079.csv")
+eastcoast_ssp370_2030 <- read.csv("data/east_coast_north_coast_ssp370_2030-2049.csv")
+eastcoast_ssp370_2060 <- read.csv("data/east_coast_north_coast_ssp370_2060-2079.csv")
+murray_ssp126_2030 <- read.csv("data/murray_basin_riverina_ssp126_2030-2049.csv")
+murray_ssp126_2060 <- read.csv("data/murray_basin_riverina_ssp126_2060-2079.csv")
+murray_ssp370_2030 <- read.csv("data/murray_basin_riverina_ssp370_2030-2049.csv")
+murray_ssp370_2060 <- read.csv("data/murray_basin_riverina_ssp370_2060-2079.csv")
+tas_ssp126_2030 <- read.csv("data/southern_slopes_south_ssp126_2030-2049.csv")
+tas_ssp126_2060 <- read.csv("data/southern_slopes_south_ssp126_2060-2079.csv")
+tas_ssp370_2030 <- read.csv("data/southern_slopes_south_ssp370_2030-2049.csv")
+tas_ssp370_2060 <- read.csv("data/southern_slopes_south_ssp370_2060-2079.csv")
+```
+
+## Introduction: Statistics for a Changing Climate
+
+Welcome to our second workshop using R this semester. Meeting all of you has been fun, and feedback has been positive so far. The discussions we had over our first practical sessions guided this workshop. Active participation really helps us tailor what we teach to suit your interests and goals, so please keep coming along and talking with us!
+
+### Recap of last week
+
+In [workshop 1](https://kga320-utas.shinyapps.io/workshop_1/), we provided an introduction/refresher on the basics of R. We covered the following:
+
+-   **Data Wrangling**: Preparing data for analysis using CSV files and data dictionaries.
+-   **Basic R Operations**: Loading data with `read.csv()`, examining structure with `str()`.
+-   **Basic Statistics**: Calculating mean, median, and standard deviation with `mean()`, `median()`, and `sd()`.
+-   **Data Visualization**: Using `ggplot` and the "grammar of graphics" for effective plots.
+
+It is well worth returning to workshop 1 if you need to refresh your memory. This workshop builds on the basics introduced last week, so a good grasp of the basics will be beneficial.
+
+The following code block will perform the set-up required for this workshop, using everything we learned from workshop 1:
+
+```{r}
+# Setup R environment
+library(tidyverse) # Includes ggplot2 and dplyr.
+
+barossa_data <- read.csv("data/barossa_1951-2014.csv")
+
+# Observational data
+north_data <- read.csv("data/monsoonal_north_burdekin_1951-2014.csv")
+eastcoast_data <- read.csv("data/east_coast_north_coast_1951-2014.csv")
+murray_data <- read.csv("data/murray_basin_riverina_1951-2014.csv")
+tas_data <- read.csv("data/southern_slopes_south_1951-2014.csv")
+```
+
+Remember this final code block from last week's exercises? We tried creating a scatter plot of daily maximum temperatures over time, and the result isn't useful at all!
+
+```{r}
+# Scatter plot of tasmax over time.
+```
+
+This week, we'll show you how to arrange data sets for better analysis of change in time.
+
+### Preparing data for better analysis
+
+The clearest problem with the data available as it stands is its **resolution**. Having a measurement of weather every day is versatile but complicated. We are dealing with a spinning planet moving around the sun. With that comes cycles and feedback loops. Some we know intuitively, such as the seasons. Some might seem more elusive, like the El Niño–Southern Oscillation.
+
+Understanding periodic processes is foundational to climate science. For this course, we'll use simple methods of grouping and averaging to remove as much periodicity as possible. We will need to learn some new functions and techniques to do this.
+
+First, we can use the function `cut` to create a factor that groups data by decade with a new column. We can then use this new column as a factor when creating plots or conducting statistics. Let's create a new data frame, `barossa_data_decadal` using `cut`:
+
+```{r}    
+# Cut data by year.
+```
+
+Another way to manipulate data frames is to use another great [tidyverse](https://www.tidyverse.org/) package - **dplyr**. dplyr is a package that provides functions for manipulating data frames by stringing together commands using **pipes**. Here's an example:
+
+```{r}      
+# Create a data set that averages tasmax, tasmin, and pr for every year in barossa_data.
+```
+
+Here's a step-by-step breakdown: 
+
+- `barossa_yearly <- barossa_data %>%` 
+  - Create a new data frame called `barossa_yearly` that is constructed from `barossa_data`. 
+  - `%>%` is a **pipe**. `barossa_data` will be pushed through into the next function for processing. 
+- `group_by(year) %>%` 
+  - Group data by year and pipe it through to the next function. This will give us the columns to which the new columns will be matched. 
+- `summarize` 
+  - Creates new columns called `mean_tasmax`, `mean_tasmin`, and `mean_pr` that are calculated to be the means of each respective function for every year.
+
+Using `dplyr` gives endless ways to interpret your data. For example, you could look at seasonal cycles and how they have changed by averaging over months and grouping across decades. Or, you could count the number of days exceeding a certain temperature yearly. This is where you can start asking key questions for your report!
+
+> 💡 **Pro Tip:** Like ggplot, dplyr also has a [cheat sheet](https://github.com/rstudio/cheatsheets/blob/main/data-transformation.pdf). Last week, it was noted that the cheatsheets can be messy. Use them as a guide as to what you can do, and use Google or ask us if you need further guidance.
+
+### Comparative analysis
+
+Now that we can group data over time periods of our choosing, we can undertake comparative analysis. Let's first see what's happening visually. Below we will make a violin plot of each decade, using the data frame we constructed with `cut` in the previous section:
+
+```{r}
+# Create violin plots of decadal variation in maximum temperature.
+```
+
+#### Statistical comparisons
+
+We can see some visual differences, but eyes are not enough. We need to conduct a statistical test to show that there is a meaningful difference between time periods. A simple measure can be found with a **t-test**. A t-test compares the difference between means for two groups. This test assumes that each group follows a **normal distribution** or a bell curve shape.
+
+```{r}
+# Conduct a t-test comparing decades.
+```
+
+We can see that the test gives a few outputs. Let's go through the key ones:
+
+-   `t` measures the difference between the means, accounting for standard error. In this case, we have `t = 2.5505`. Values above 2 for large datasets are generally considered significant.
+-   `p-value` is the probability that the test has found a significant difference. We reject a **null hypothesis** that the means are equal if $p<0.05$. Here, we have `p-value = 0.02`, so we have strong evidence to suggest that the means of the two groups are different.
+-   `95 percent confidence interval` provides an interval of the difference between the means of the two groups. In this case, the interval is given to be `-5.59 -0.57`, so we can be 95% sure that the 2010s are between 5 and 0.5 degrees warmer than the 1950s.
+
+> 🤔 **Are the assumptions made for conducting a t-test valid for the data collected?**
+>
+> Consider the temperature distribution histograms you made last week. Did they look like normal distributions? This is worth considering, but a t-test works well for now. 
+
+#### Correlation analysis
+
+As we move further into statistical analysis, we must consider **correlation**. Correlation measures how much two variables are related to each other. It is *not* a measure of whether one variable has influence over the other. Correlation does not equal causation!
+
+In R, we can find a correlation using the `cor` function. `cor` takes two variables and finds a coefficient that takes on values between 1 and -1, with a coefficient of 0 indicating no correlation, a positive coefficient indicating both variables are increasing relative to each other, and a negative coefficient indicating the increase of one variable is associated with the decrease of the other. Let's find the correlations between the variables in `barossa_data`:
+
+```{r}
+# Correlation between variables
+```
+
+We can see that `tasmax` and `tasmin` are strongly correlated. This makes sense; they are both measures of temperature for a day. `tasmax` and `pr` show a small correlation, suggesting that days with higher heat are more likely to come with rain in the Barossa Valley.
+
+We can show this correlation with simple scatter graphs of the compared variables:
+
+```{r}
+# Scatter plot of pr ~ tasmax
+```
+
+Correlation will be an important measure to consider as we analyse the complete change of variables over time by building a **linear model**. Variables that are strongly correlated can reduce the effectiveness of linear models. There's nothing to worry about yet, but keep it in mind! \### Advanced visualisations
+
+We won't fully construct and analyse linear models this week but can visualise them. `ggplot` provides a means to simply visualise a linear relationship with `geom_smooth`. Last week, this would not have been useful; the complete dataset was far too messy. Now that we have `barossa_yearly`, we can finally make useful time series figures. Let's construct one for `tasmax` over the observation period:
+
+```{r}
+# Scatter plot with regression line?
+```
+
+We can see a clear change over time; when we construct complete linear models, we will back up the visuals with a p-value, but this is a good start!
+
+## Workshop: Comparative Analysis
+
+### Summary of introduction
+
+You should now feel ready to go deeper with your climate data! Here's a summary of the key points:
+
+-   **Data Preparation**: Using functions like `cut` and those provided in dplyr to simplify high-resolution data.
+-   **Comparative Analysis**: Plotting different time periods, and comparing them with t-tests.
+-   **Correlation**: Calculating correlation between variables with `cor` and visualising them with scatter plots.
+-   **Advanced Visualisations**: Using `geom_smooth` to visualise trends in a time series.
+
+### Testing your knowledge
+
+Almost time to code! First, another quick quiz. Good luck!
+
+```{r}
+# What is the correct order of operations to summarise barossa_data by averages for each decade?
+```
+
+```{r}
+# Which of the following code blocks could be used to create a data frame with the mean for each month in barossa_data?
+```
+
+```{r}
+# A t-test comparing variables A and B has estimated a 95% confidence interval for the difference in mean to be [-0.53, 1.34], with a p-value of 0.3. What is a suitable conclusion?
+```
+
+```{r}
+# Variables i and j have a correlation coefficient of 0.9. If you plotted i and j on a scatter plot, how would you expect the points to generally trend?
+```
+
+```{r}
+# Which dplyr function would correctly filter barossa_data for all values of tasmax above a threshold of 30?
+```
+
+There are lots of questions here with dplyr and pipes. If you get them correct, give yourself a pat on the back! Try using the correct code provided in these examples as part of the exercises below. \### Exercises
+
+> 🔥 **Important:** You cannot save your work on this webpage. If you create something you want to keep, save it to your computer!
+
+> 📊 **Assessment Portfolio Task A**: The first assessment task for these workshops is still some time away, but the sooner you start, the better! This week, you should consider how you might structure your data to highlight climate impacts on your region.
+
+#### Correlation between variables
+
+It's your turn! First, let's compare the variables in your region using `cor`:
+
+```{r}
+# Find the correlation coefficients for your region's climate variables.
+```
+
+These results will come into play for future analysis. Would you choose one variable over another to look into a certain question? Does correlation have an impact on any models you might want to construct?
+
+#### Comparing across time periods
+
+> 🔎 **For your report**: You will make a few comparisons and factors here. It's up to you to consider the best way to manipulate your data to suit the climate story you want to tell. If you feel lost, list a few good questions that you think you could answer with temperature and precipitation measurements, and talk to us about how they could be answered with statistics.
+
+Now, we can try factoring your data into decades using `cut`. Check that this has worked, and then create violin plots for each decade. If particular decades look worth comparing, conduct a t-test to measure the difference. Remember to make notes!
+
+```{r}
+# Use cut to compare climate data across decades.
+```
+
+Next, it's time to get into dplyr! Many examples of good dplyr code for working with climate data have been provided above. If you're lost, copy these examples over your region. This would be a good time to consider using the anomalies calculated last week. Once you are satisfied with your new data frame, plot it, and if it makes sense, include a linear fit.
+
+> 🔥 **Important:** Copy the code you use to simplify your data so you can reuse it for future workshops. It will also be important to record how you conducted your analysis!
+
+```{r}
+# Use dplyr functions to simplify your climate data.
+```
+
+### Conclusion
+
+That wraps up this week! Fewer exercises this week, but the intent is for you to spend as much time as you can understanding and playing with dplyr. For the following workshops it will be essential to manipulate and simplify data frames. We will have one more workshop before **Assessment Portfolio Task A** is due, where we will fully introduce linear modelling, make sure you are making good progress on your report. That's all for now, great job!
