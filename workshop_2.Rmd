@@ -13,37 +13,45 @@ runtime: shiny_prerendered
 library(tidyverse) # Includes ggplot2 and dplyr.
 library(learnr)
 
-barossa_data <- read.csv("data/barossa_1951-2014.csv")
+fix <- function(df) {
+  df <- separate(df, time, c('year', 'month', 'day'), sep = "-",remove = FALSE) # Splits date into columns for year, month, and day.
+  df$year <- as.numeric(df$year) # Make sure R treats year as a number
+  df$month <- as.numeric(df$month) # Make sure R treats year as a number
+  df$day <- as.numeric(df$day) # Make sure R treats year as a number
+  return(df)
+}
+
+barossa_data <- read.csv("data/barossa_1951-2014.csv") %>% fix()
 
 # Observational data
-north_data <- read.csv("data/monsoonal_north_burdekin_1951-2014.csv")
-eastcoast_data <- read.csv("data/east_coast_north_coast_1951-2014.csv")
-murray_data <- read.csv("data/murray_basin_riverina_1951-2014.csv")
-tas_data <- read.csv("data/southern_slopes_south_1951-2014.csv")
+north_data <- read.csv("data/monsoonal_north_burdekin_1951-2014.csv") %>% fix()
+eastcoast_data <- read.csv("data/east_coast_north_coast_1951-2014.csv") %>% fix()
+murray_data <- read.csv("data/murray_basin_riverina_1951-2014.csv") %>% fix()
+tas_data <- read.csv("data/southern_slopes_south_1951-2014.csv") %>% fix()
 
 # Drought data
-north_paleo <- read.csv("data/monsoonal_north_burdekin_drought_1400-2012.csv")
-eastcoast_paleo <- read.csv("data/east_coast_north_coast_drought_1400-2012.csv")
-murray_paleo <- read.csv("data/murray_basin_riverina_drought_1400-2012.csv")
-tas_paleo <- read.csv("data/southern_slopes_south_drought_1400-2012.csv")
+north_paleo <- read.csv("data/monsoonal_north_burdekin_drought_1400-2012.csv") %>% fix()
+eastcoast_paleo <- read.csv("data/east_coast_north_coast_drought_1400-2012.csv") %>% fix()
+murray_paleo <- read.csv("data/murray_basin_riverina_drought_1400-2012.csv") %>% fix()
+tas_paleo <- read.csv("data/southern_slopes_south_drought_1400-2012.csv") %>% fix()
 
 # Future data
-north_ssp126_2030 <- read.csv("data/monsoonal_north_burdekin_ssp126_2030-2049.csv")
-north_ssp126_2060 <- read.csv("data/monsoonal_north_burdekin_ssp126_2060-2079.csv")
-north_ssp370_2030 <- read.csv("data/monsoonal_north_burdekin_ssp370_2030-2049.csv")
-north_ssp370_2060 <- read.csv("data/monsoonal_north_burdekin_ssp370_2060-2079.csv")
-eastcoast_ssp126_2030 <- read.csv("data/east_coast_north_coast_ssp126_2030-2049.csv")
-eastcoast_ssp126_2060 <- read.csv("data/east_coast_north_coast_ssp126_2060-2079.csv")
-eastcoast_ssp370_2030 <- read.csv("data/east_coast_north_coast_ssp370_2030-2049.csv")
-eastcoast_ssp370_2060 <- read.csv("data/east_coast_north_coast_ssp370_2060-2079.csv")
-murray_ssp126_2030 <- read.csv("data/murray_basin_riverina_ssp126_2030-2049.csv")
-murray_ssp126_2060 <- read.csv("data/murray_basin_riverina_ssp126_2060-2079.csv")
-murray_ssp370_2030 <- read.csv("data/murray_basin_riverina_ssp370_2030-2049.csv")
-murray_ssp370_2060 <- read.csv("data/murray_basin_riverina_ssp370_2060-2079.csv")
-tas_ssp126_2030 <- read.csv("data/southern_slopes_south_ssp126_2030-2049.csv")
-tas_ssp126_2060 <- read.csv("data/southern_slopes_south_ssp126_2060-2079.csv")
-tas_ssp370_2030 <- read.csv("data/southern_slopes_south_ssp370_2030-2049.csv")
-tas_ssp370_2060 <- read.csv("data/southern_slopes_south_ssp370_2060-2079.csv")
+north_ssp126_2030 <- read.csv("data/monsoonal_north_burdekin_ssp126_2030-2049.csv") %>% fix()
+north_ssp126_2060 <- read.csv("data/monsoonal_north_burdekin_ssp126_2060-2079.csv") %>% fix()
+north_ssp370_2030 <- read.csv("data/monsoonal_north_burdekin_ssp370_2030-2049.csv") %>% fix()
+north_ssp370_2060 <- read.csv("data/monsoonal_north_burdekin_ssp370_2060-2079.csv") %>% fix()
+eastcoast_ssp126_2030 <- read.csv("data/east_coast_north_coast_ssp126_2030-2049.csv") %>% fix()
+eastcoast_ssp126_2060 <- read.csv("data/east_coast_north_coast_ssp126_2060-2079.csv") %>% fix()
+eastcoast_ssp370_2030 <- read.csv("data/east_coast_north_coast_ssp370_2030-2049.csv") %>% fix()
+eastcoast_ssp370_2060 <- read.csv("data/east_coast_north_coast_ssp370_2060-2079.csv") %>% fix()
+murray_ssp126_2030 <- read.csv("data/murray_basin_riverina_ssp126_2030-2049.csv") %>% fix()
+murray_ssp126_2060 <- read.csv("data/murray_basin_riverina_ssp126_2060-2079.csv") %>% fix()
+murray_ssp370_2030 <- read.csv("data/murray_basin_riverina_ssp370_2030-2049.csv") %>% fix()
+murray_ssp370_2060 <- read.csv("data/murray_basin_riverina_ssp370_2060-2079.csv") %>% fix()
+tas_ssp126_2030 <- read.csv("data/southern_slopes_south_ssp126_2030-2049.csv") %>% fix()
+tas_ssp126_2060 <- read.csv("data/southern_slopes_south_ssp126_2060-2079.csv") %>% fix()
+tas_ssp370_2030 <- read.csv("data/southern_slopes_south_ssp370_2030-2049.csv") %>% fix()
+tas_ssp370_2060 <- read.csv("data/southern_slopes_south_ssp370_2060-2079.csv") %>% fix()
 ```
 
 ## Introduction: Statistics for a Changing Climate
@@ -100,13 +108,6 @@ Understanding periodic processes is foundational to climate science. For this co
 First, we can use the function `cut` to create a factor that groups data by decade with a new column. We can then use this new column as a factor when creating plots or conducting statistics. Let's create a new data frame, `barossa_data_decadal` using `cut`:
 
 ```{r cut, exercise=TRUE}    
-# Cut data by year.
-
-barossa_data <- separate(barossa_data, time, c('year', 'month', 'day'), sep = "-",remove = FALSE) # Splits date into columns for year, month, and day.
-barossa_data$year <- as.numeric(barossa_data$year) # Make sure R treats year as a number
-barossa_data$month <- as.numeric(barossa_data$month) # Make sure R treats year as a number
-barossa_data$day <- as.numeric(barossa_data$day) # Make sure R treats year as a number
-
 barossa_data$decade <- cut(barossa_data$year,
                            breaks = seq(1950, 2020, by = 10),
                            labels = c("1950s", "1960s", "1970s", "1980s", "1990s", "2000s", "2010s"))
@@ -345,12 +346,6 @@ These results will come into play for future analysis. Would you choose one vari
 Now, we can try factoring your data into decades using `cut`. Check that this has worked, and then create violin plots for each decade. If particular decades look worth comparing, conduct a t-test to measure the difference. Remember to make notes!
 
 ```{r ex_cut, exercise=TRUE}
-# Replace barossa_data with your data frame to use year, month, and day as seperate numerical columns.
-barossa_data <- separate(barossa_data, time, c('year', 'month', 'day'), sep = "-",remove = FALSE) # Splits date into columns for year, month, and day.
-barossa_data$year <- as.numeric(barossa_data$year) # Make sure R treats year as a number
-barossa_data$month <- as.numeric(barossa_data$month) # Make sure R treats year as a number
-barossa_data$day <- as.numeric(barossa_data$day) # Make sure R treats year as a number
-
 # Use cut to compare climate data across decades.
 
 
